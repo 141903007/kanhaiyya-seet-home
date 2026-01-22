@@ -1,0 +1,15 @@
+Kanhaiyya Snack Center
+-----------------------
+Date: 22-01-2026 22:19:25
+Table: 11
+Mobile: 609
+
+Misal Pav  ₹70 x 2  =  ₹140
+वडापाव  ₹20 x 9  =  ₹180
+
+-----------------------
+Subtotal: ₹320
+Discount: 10.0%
+Net Total: ₹288.0
+
+Thank You! Visit Again
