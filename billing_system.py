@@ -17,6 +17,7 @@ root.config(bg="#f4f6f7")
 cart = {}
 filtered_df = df_prices.copy()
 qty_vars = {}
+cart_qty_vars = {}
 
 # ---------------- FUNCTIONS ----------------
 def search_items(*args):
@@ -39,24 +40,70 @@ def add_or_update_item(item, qty_var):
     else:
         cart[item] = qty
 
-    # ❌ no redraw / no refresh
+    refresh_cart()
+
+def update_from_cart(item, qty_var):
+    try:
+        qty = int(qty_var.get())
+        if qty < 0:
+            raise ValueError
+    except:
+        messagebox.showerror("Error", "Quantity must be 0 or positive")
+        qty_var.set(cart.get(item, 0))
+        return
+
+    if qty == 0:
+        delete_from_cart(item)
+        return
+
+    cart[item] = qty
+    qty_vars[item].set(str(qty))
+    refresh_cart()
+
+def delete_from_cart(item):
+    cart.pop(item, None)
+    qty_vars[item].set("0")
     refresh_cart()
 
 def refresh_cart():
-    txt_cart.config(state="normal")
-    txt_cart.delete(1.0, tk.END)
+    for w in frame_cart_items.winfo_children():
+        w.destroy()
+
     subtotal = 0
+    cart_qty_vars.clear()
 
     for item, qty in cart.items():
         price = df_prices.loc[df_prices["Item"] == item, "Price"].values[0]
         amt = price * qty
-        txt_cart.insert(tk.END, f"{item}  ₹{price} x {qty} = ₹{amt}\n")
         subtotal += amt
+
+        row = tk.Frame(frame_cart_items)
+        row.pack(fill="x", pady=2)
+
+        tk.Label(row, text=item, width=16, anchor="w").pack(side="left")
+        tk.Label(row, text=f"₹{price}", width=6).pack(side="left")
+
+        qv = tk.StringVar(value=str(qty))
+        cart_qty_vars[item] = qv
+
+        ent = tk.Entry(row, textvariable=qv, width=4)
+        ent.pack(side="left", padx=4)
+        ent.bind("<Return>", lambda e, i=item, v=qv: update_from_cart(i, v))
+
+        tk.Label(row, text=f"= ₹{amt}", width=8).pack(side="left")
+
+        tk.Button(
+            row,
+            text="❌",
+            fg="red",
+            command=lambda i=item: delete_from_cart(i)
+        ).pack(side="right", padx=4)
 
     discount = float(entry_discount.get() or 0)
     net = subtotal - (subtotal * discount / 100)
-    lbl_total.config(text=f"Subtotal: ₹{subtotal} | Discount: {discount}% | Net Total: ₹{net}")
-    txt_cart.config(state="disabled")
+    lbl_total.config(
+        text=f"Subtotal: ₹{subtotal} | Discount: {discount}% | Net Total: ₹{net}"
+    )
 
 def get_bill_data():
     subtotal = 0
@@ -88,16 +135,12 @@ def preview_bill():
     lines, subtotal, discount, net = get_bill_data()
     now = datetime.now()
 
-    table = entry_table.get().strip()
-    mobile = entry_mobile.get().strip()
-
     txt.insert("end", "Kanhaiyya Snack Center\n")
     txt.insert("end", "-" * 35 + "\n")
     txt.insert("end", f"Date   : {now.strftime('%d-%m-%Y %H:%M:%S')}\n")
-    txt.insert("end", f"Table  : {table}\n")
-    txt.insert("end", f"Mobile : {mobile}\n")
+    txt.insert("end", f"Table  : {entry_table.get()}\n")
+    txt.insert("end", f"Mobile : {entry_mobile.get()}\n")
     txt.insert("end", "-" * 35 + "\n\n")
-
     txt.insert("end", "\n".join(lines) + "\n\n")
     txt.insert("end", "-" * 35 + "\n")
     txt.insert("end", f"Subtotal : ₹{subtotal}\n")
@@ -109,11 +152,8 @@ def preview_bill():
     txt.config(state="disabled")
 
     tk.Button(
-        preview,
-        text="Confirm & Save",
-        bg="#27ae60",
-        fg="white",
-        height=2,
+        preview, text="Confirm & Save",
+        bg="#27ae60", fg="white", height=2,
         command=lambda: [preview.destroy(), save_bill()]
     ).pack(fill="x", padx=10, pady=5)
 
@@ -122,24 +162,18 @@ def preview_bill():
 
 # ---------------- SAVE BILL ----------------
 def save_bill():
-    table = entry_table.get().strip()
-    mobile = entry_mobile.get().strip()
-
     now = datetime.now()
-    year_folder = f"bills/{now.year}"
-    os.makedirs(year_folder, exist_ok=True)
+    os.makedirs(f"bills/{now.year}", exist_ok=True)
 
-    file_name = f"{now.strftime('%H-%M-%S')}_T-{table}_{mobile}.txt"
-    file_path = os.path.join(year_folder, file_name)
-
+    path = f"bills/{now.year}/{now.strftime('%H-%M-%S')}_T-{entry_table.get()}_{entry_mobile.get()}.txt"
     lines, subtotal, discount, net = get_bill_data()
 
-    with open(file_path, "w") as f:
+    with open(path, "w") as f:
         f.write("Kanhaiyya Snack Center\n")
         f.write("-----------------------\n")
         f.write(f"Date   : {now.strftime('%d-%m-%Y %H:%M:%S')}\n")
-        f.write(f"Table  : {table}\n")
-        f.write(f"Mobile : {mobile}\n")
+        f.write(f"Table  : {entry_table.get()}\n")
+        f.write(f"Mobile : {entry_mobile.get()}\n")
         f.write("-----------------------\n")
         f.write("\n".join(lines) + "\n")
         f.write("-----------------------\n")
@@ -149,8 +183,8 @@ def save_bill():
         f.write("\nThank You! Visit Again\n")
 
     cart.clear()
-    for var in qty_vars.values():
-        var.set("0")
+    for v in qty_vars.values():
+        v.set("0")
 
     entry_table.delete(0, tk.END)
     entry_mobile.delete(0, tk.END)
@@ -158,7 +192,7 @@ def save_bill():
     entry_discount.insert(0, "0")
 
     refresh_cart()
-    messagebox.showinfo("Saved", f"Bill saved:\n{file_path}")
+    messagebox.showinfo("Saved", "Bill saved successfully")
 
 # ---------------- DRAW ITEMS ----------------
 def draw_items():
@@ -178,15 +212,13 @@ def draw_items():
         tk.Label(block, text=item, width=18, anchor="w").grid(row=0, column=0)
         tk.Label(block, text=f"₹{price}", width=6).grid(row=0, column=1)
 
-        qty_entry = tk.Entry(block, textvariable=qty_var, width=4)
-        qty_entry.grid(row=0, column=2)
-        qty_entry.bind("<Return>", lambda e, i=item, q=qty_var: add_or_update_item(i, q))
+        ent = tk.Entry(block, textvariable=qty_var, width=4)
+        ent.grid(row=0, column=2)
+        ent.bind("<Return>", lambda e, i=item, q=qty_var: add_or_update_item(i, q))
 
         tk.Button(
-            block,
-            text="Add",
-            bg="#27ae60",
-            fg="white",
+            block, text="Add",
+            bg="#27ae60", fg="white",
             command=lambda i=item, q=qty_var: add_or_update_item(i, q)
         ).grid(row=0, column=3, padx=4)
 
@@ -195,7 +227,7 @@ def draw_items():
             col = 0
             row += 1
 
-# ---------------- TOP INFO ----------------
+# ---------------- UI ----------------
 frame_info = tk.Frame(root, bg="white", pady=8)
 frame_info.pack(fill="x")
 
@@ -212,7 +244,6 @@ entry_discount = tk.Entry(frame_info, width=5)
 entry_discount.insert(0, "0")
 entry_discount.pack(side="left")
 
-# ---------------- ITEMS ----------------
 frame_items = tk.LabelFrame(root, text="Items")
 frame_items.place(x=10, y=60, width=780, height=520)
 
@@ -223,33 +254,27 @@ tk.Entry(frame_items, textvariable=search_var).pack(fill="x", padx=6, pady=4)
 canvas = tk.Canvas(frame_items)
 scroll = tk.Scrollbar(frame_items, command=canvas.yview)
 canvas.configure(yscrollcommand=scroll.set)
-
 scroll.pack(side="right", fill="y")
 canvas.pack(fill="both", expand=True)
 
 frame_items_list = tk.Frame(canvas)
 canvas.create_window((0, 0), window=frame_items_list, anchor="nw")
 
-# ---------------- CART ----------------
 frame_cart = tk.LabelFrame(root, text="Cart")
 frame_cart.place(x=800, y=60, width=440, height=420)
 
-txt_cart = tk.Text(frame_cart, state="disabled")
-txt_cart.pack(fill="both", expand=True, padx=5)
+frame_cart_items = tk.Frame(frame_cart)
+frame_cart_items.pack(fill="both", expand=True, padx=5, pady=5)
 
 lbl_total = tk.Label(root, font=("Arial", 13), bg="#f4f6f7")
 lbl_total.place(x=800, y=490)
 
-# ---------------- BILL PANEL ----------------
 frame_bill = tk.LabelFrame(root, text="Bill")
 frame_bill.place(x=10, y=590, width=1230, height=90)
 
 tk.Button(
-    frame_bill,
-    text="Preview Bill",
-    height=2,
-    bg="#34495e",
-    fg="white",
+    frame_bill, text="Preview Bill",
+    height=2, bg="#34495e", fg="white",
     command=preview_bill
 ).pack(fill="x", padx=30, pady=15)
 

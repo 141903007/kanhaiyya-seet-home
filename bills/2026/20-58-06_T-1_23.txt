@@ -1,0 +1,14 @@
+Kanhaiyya Snack Center
+-----------------------
+Date   : 23-01-2026 20:58:06
+Table  : 1
+Mobile : 23
+-----------------------
+Rice Plate / राइस प्लेट  ₹100 x 1 = ₹100
+Misal Chapati / मिसळ चपाती  ₹60 x 2 = ₹120
+-----------------------
+Subtotal : ₹220
+Discount : 0.0%
+Net Total: ₹220.0
+
+Thank You! Visit Again
