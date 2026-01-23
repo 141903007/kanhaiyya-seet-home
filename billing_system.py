@@ -24,8 +24,6 @@ def search_items(*args):
     q = search_var.get().lower()
     filtered_df = df_prices if q == "" else df_prices[df_prices["Item"].str.lower().str.startswith(q)]
     draw_items()
-    root.update_idletasks()
-    canvas.configure(scrollregion=canvas.bbox("all"))
 
 def add_or_update_item(item, qty_var):
     try:
@@ -41,9 +39,8 @@ def add_or_update_item(item, qty_var):
     else:
         cart[item] = qty
 
-    search_var.set("")
+    # ❌ no redraw / no refresh
     refresh_cart()
-    draw_items()
 
 def refresh_cart():
     txt_cart.config(state="normal")
@@ -83,7 +80,7 @@ def preview_bill():
 
     preview = tk.Toplevel(root)
     preview.title("Bill Preview")
-    preview.geometry("400x520")
+    preview.geometry("420x550")
 
     txt = tk.Text(preview, font=("Courier", 10))
     txt.pack(fill="both", expand=True, padx=10, pady=10)
@@ -91,15 +88,24 @@ def preview_bill():
     lines, subtotal, discount, net = get_bill_data()
     now = datetime.now()
 
+    table = entry_table.get().strip()
+    mobile = entry_mobile.get().strip()
+
     txt.insert("end", "Kanhaiyya Snack Center\n")
-    txt.insert("end", "-" * 30 + "\n")
-    txt.insert("end", f"Date: {now.strftime('%d-%m-%Y %H:%M:%S')}\n\n")
-    txt.insert("end", "\n".join(lines) + "\n")
-    txt.insert("end", "-" * 30 + "\n")
-    txt.insert("end", f"Subtotal: ₹{subtotal}\n")
-    txt.insert("end", f"Discount: {discount}%\n")
+    txt.insert("end", "-" * 35 + "\n")
+    txt.insert("end", f"Date   : {now.strftime('%d-%m-%Y %H:%M:%S')}\n")
+    txt.insert("end", f"Table  : {table}\n")
+    txt.insert("end", f"Mobile : {mobile}\n")
+    txt.insert("end", "-" * 35 + "\n\n")
+
+    txt.insert("end", "\n".join(lines) + "\n\n")
+    txt.insert("end", "-" * 35 + "\n")
+    txt.insert("end", f"Subtotal : ₹{subtotal}\n")
+    txt.insert("end", f"Discount : {discount}%\n")
     txt.insert("end", f"Net Total: ₹{net}\n")
-    txt.insert("end", "\nThank You! Visit Again")
+    txt.insert("end", "-" * 35 + "\n")
+    txt.insert("end", "Thank You! Visit Again 🙏")
+
     txt.config(state="disabled")
 
     tk.Button(
@@ -131,12 +137,16 @@ def save_bill():
     with open(file_path, "w") as f:
         f.write("Kanhaiyya Snack Center\n")
         f.write("-----------------------\n")
+        f.write(f"Date   : {now.strftime('%d-%m-%Y %H:%M:%S')}\n")
+        f.write(f"Table  : {table}\n")
+        f.write(f"Mobile : {mobile}\n")
+        f.write("-----------------------\n")
         f.write("\n".join(lines) + "\n")
         f.write("-----------------------\n")
-        f.write(f"Subtotal: ₹{subtotal}\n")
-        f.write(f"Discount: {discount}%\n")
+        f.write(f"Subtotal : ₹{subtotal}\n")
+        f.write(f"Discount : {discount}%\n")
         f.write(f"Net Total: ₹{net}\n")
-        f.write("\nThank You! Visit Again")
+        f.write("\nThank You! Visit Again\n")
 
     cart.clear()
     for var in qty_vars.values():
@@ -184,9 +194,6 @@ def draw_items():
         if col == 2:
             col = 0
             row += 1
-
-    root.update_idletasks()
-    canvas.configure(scrollregion=canvas.bbox("all"))
 
 # ---------------- TOP INFO ----------------
 frame_info = tk.Frame(root, bg="white", pady=8)
