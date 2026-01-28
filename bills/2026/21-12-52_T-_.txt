@@ -1,0 +1,13 @@
+Kanhaiyya Snack Center
+-----------------------
+Date   : 28-01-2026 21:12:52
+Table  : 
+Mobile : 
+-----------------------
+Tea / Black Tea / चहा  ₹10 x 1 = ₹10
+-----------------------
+Subtotal : ₹10
+Discount : 0.0%
+Net Total: ₹10.0
+
+Thank You! Visit Again

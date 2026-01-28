@@ -1,0 +1,15 @@
+Kanhaiyya Snack Center
+-----------------------
+Date   : 28-01-2026 21:12:13
+Table  : 8
+Mobile : 9860444609
+-----------------------
+Rice Plate / राइस प्लेट  ₹100 x 1 = ₹100
+Gravy Manchurian / ग्रेवी मंचुरियन  ₹50 x 3 = ₹150
+VManchurian / व्हे मंचुरियन  ₹50 x 2 = ₹100
+-----------------------
+Subtotal : ₹350
+Discount : 10.0%
+Net Total: ₹315.0
+
+Thank You! Visit Again

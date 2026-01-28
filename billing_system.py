@@ -92,23 +92,16 @@ def refresh_cart():
 
         tk.Label(row, text=f"= ₹{amt}", width=8).pack(side="left")
 
-        tk.Button(
-            row,
-            text="❌",
-            fg="red",
-            command=lambda i=item: delete_from_cart(i)
-        ).pack(side="right", padx=4)
+        tk.Button(row, text="❌", fg="red",
+                  command=lambda i=item: delete_from_cart(i)).pack(side="right", padx=4)
 
     discount = float(entry_discount.get() or 0)
     net = subtotal - (subtotal * discount / 100)
-    lbl_total.config(
-        text=f"Subtotal: ₹{subtotal} | Discount: {discount}% | Net Total: ₹{net}"
-    )
+    lbl_total.config(text=f"Subtotal: ₹{subtotal} | Discount: {discount}% | Net Total: ₹{net}")
 
 def get_bill_data():
     subtotal = 0
     lines = []
-
     for item, qty in cart.items():
         price = df_prices.loc[df_prices["Item"] == item, "Price"].values[0]
         amt = price * qty
@@ -148,14 +141,11 @@ def preview_bill():
     txt.insert("end", f"Net Total: ₹{net}\n")
     txt.insert("end", "-" * 35 + "\n")
     txt.insert("end", "Thank You! Visit Again 🙏")
-
     txt.config(state="disabled")
 
-    tk.Button(
-        preview, text="Confirm & Save",
-        bg="#27ae60", fg="white", height=2,
-        command=lambda: [preview.destroy(), save_bill()]
-    ).pack(fill="x", padx=10, pady=5)
+    tk.Button(preview, text="Confirm & Save", bg="#27ae60", fg="white",
+              height=2, command=lambda: [preview.destroy(), save_bill()]
+              ).pack(fill="x", padx=10, pady=5)
 
     tk.Button(preview, text="Cancel", height=2,
               command=preview.destroy).pack(fill="x", padx=10)
@@ -216,11 +206,9 @@ def draw_items():
         ent.grid(row=0, column=2)
         ent.bind("<Return>", lambda e, i=item, q=qty_var: add_or_update_item(i, q))
 
-        tk.Button(
-            block, text="Add",
-            bg="#27ae60", fg="white",
-            command=lambda i=item, q=qty_var: add_or_update_item(i, q)
-        ).grid(row=0, column=3, padx=4)
+        tk.Button(block, text="Add", bg="#27ae60", fg="white",
+                  command=lambda i=item, q=qty_var: add_or_update_item(i, q)
+                  ).grid(row=0, column=3, padx=4)
 
         col += 1
         if col == 2:
@@ -260,6 +248,29 @@ canvas.pack(fill="both", expand=True)
 frame_items_list = tk.Frame(canvas)
 canvas.create_window((0, 0), window=frame_items_list, anchor="nw")
 
+# -------- AUTO SCROLL REGION UPDATE --------
+def on_frame_configure(event):
+    canvas.configure(scrollregion=canvas.bbox("all"))
+
+frame_items_list.bind("<Configure>", on_frame_configure)
+
+# -------- MOUSE WHEEL SUPPORT --------
+def _on_mousewheel(event):
+    canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+def _bind_mousewheel(event):
+    canvas.bind_all("<MouseWheel>", _on_mousewheel)      # Windows
+    canvas.bind_all("<Button-4>", lambda e: canvas.yview_scroll(-1, "units"))  # Linux up
+    canvas.bind_all("<Button-5>", lambda e: canvas.yview_scroll(1, "units"))   # Linux down
+
+def _unbind_mousewheel(event):
+    canvas.unbind_all("<MouseWheel>")
+    canvas.unbind_all("<Button-4>")
+    canvas.unbind_all("<Button-5>")
+
+canvas.bind("<Enter>", _bind_mousewheel)
+canvas.bind("<Leave>", _unbind_mousewheel)
+
 frame_cart = tk.LabelFrame(root, text="Cart")
 frame_cart.place(x=800, y=60, width=440, height=420)
 
@@ -272,11 +283,9 @@ lbl_total.place(x=800, y=490)
 frame_bill = tk.LabelFrame(root, text="Bill")
 frame_bill.place(x=10, y=590, width=1230, height=90)
 
-tk.Button(
-    frame_bill, text="Preview Bill",
-    height=2, bg="#34495e", fg="white",
-    command=preview_bill
-).pack(fill="x", padx=30, pady=15)
+tk.Button(frame_bill, text="Preview Bill",
+          height=2, bg="#34495e", fg="white",
+          command=preview_bill).pack(fill="x", padx=30, pady=15)
 
 draw_items()
 root.mainloop()
