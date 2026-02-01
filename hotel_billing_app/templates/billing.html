@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Billing</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/app.js"></script>
+</head>
+<body>
+
+<h2>Billing Screen</h2>
+
+Table:
+<input id="table" placeholder="Table No">
+
+Mobile:
+<input id="mobile" placeholder="Customer Mobile">
+
+<div class="card">
+    <h3>Items</h3>
+    <div id="items"></div>
+</div>
+
+<div class="card">
+    <h3>Cart</h3>
+    <div id="cart"></div>
+    <h3>Total: ₹<span id="total">0</span></h3>
+    <button onclick="generateBill()">Generate Bill</button>
+</div>
+
+</body>
+</html>

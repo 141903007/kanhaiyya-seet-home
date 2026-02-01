@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hotel Billing Login</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="card" style="width:300px;margin:100px auto;text-align:center;">
+    <h2>Hotel Billing Login</h2>
+    <input id="user" placeholder="Username"><br>
+    <input id="pass" type="password" placeholder="Password"><br>
+    <button onclick="login()">Login</button>
+    <p id="msg" style="color:red;"></p>
+</div>
+
+<script>
+function login(){
+    fetch('/login', {
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:`username=${user.value}&password=${pass.value}`
+    }).then(r=>r.text()).then(d=>{
+        if(d=="success") location.href="/dashboard";
+        else msg.innerText="Invalid login";
+    });
+}
+</script>
+</body>
+</html>

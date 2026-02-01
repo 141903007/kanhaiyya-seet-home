@@ -1,0 +1,19 @@
+body { font-family: Arial; background:#f2f4f8; }
+.card { background:white; padding:15px; border-radius:8px; margin:10px; }
+button { background:#27ae60; color:white; border:none; padding:8px 12px; }
+input { padding:5px; margin:5px; }
+
+
+.item-box {
+    padding: 8px;
+    border: 1px solid #ddd;
+    margin: 5px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.cart-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 5px 0;
+}
